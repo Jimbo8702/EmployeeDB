@@ -73,9 +73,12 @@ function allRoles() {
 }
 //view all employees
 function allEmployees() {
-  db.query("SELECT * FROM employee", function (err, results) {
-    console.log(results);
-  });
+  db.query(
+    "SELECT * FROM role RIGHT JOIN employee ON role.id = employee.role_id",
+    function (err, results) {
+      console.log(results);
+    }
+  );
   //console.log("employees");
 }
 //add department
@@ -102,7 +105,7 @@ function addDepartment() {
 //add role
 function addRole() {
   db.query(`SELECT * FROM department`, function (err, results) {
-    console.log(results);
+    //console.log(results);
     const departments = results.map((department) => department.name);
 
     inquirer
@@ -125,8 +128,21 @@ function addRole() {
         },
       ]) // use results to loop through departments to see if the department entered has a matching id, insert that id in when INSERTING
       .then((response) => {
+        function correctID() {
+          for (var i = 0; i < departments.length; i++) {
+            if (departments[i] === response.department) {
+              //const ids = results.map((department) => department.id);
+              let num = i + 1;
+
+              return num;
+            }
+          }
+        }
+        //console.log(correctID());
         db.query(
-          `INSERT INTO role (title , salary) VALUES ("${response.name}","${response.salary}")`,
+          `INSERT INTO role (title , salary, department_id) VALUES ("${
+            response.name
+          }","${response.salary}", ${correctID()} )`,
           function (err, results) {
             //console.log(results);
             console.log("added role");
@@ -138,8 +154,8 @@ function addRole() {
 }
 //add employee
 function addEmployee() {
-  db.query(`SELECT * FROM role WHERE role.title`, function (err, results) {
-    console.log(results);
+  db.query(`SELECT * FROM role`, function (err, results) {
+    //console.log(results);
 
     const roles = results.map((role) => role.title);
 
@@ -168,10 +184,25 @@ function addEmployee() {
         },
       ])
       .then((response) => {
+        function correctID() {
+          for (var i = 0; i < roles.length; i++) {
+            if (roles[i] === response.role) {
+              //const ids = results.map((role) => role.id);
+              let num = i + 1;
+              return num;
+            }
+          }
+        }
+        // db.query("SELECT * FROM employee", function (err, results) {
+        //   console.log(results);
+        //   function managerID() {}
+        // });
         db.query(
-          `INSERT INTO employee (first_name , last_name) VALUES ("${response.firstName}","${response.lastName}","${response.manager}")`,
+          `INSERT INTO employee (first_name , last_name, role_id) VALUES ("${
+            response.firstName
+          }","${response.lastName}", ${correctID()})`,
           function (err, results) {
-            //console.log(results);
+            console.log(results);
             console.log("added employee");
             startApp();
           }
