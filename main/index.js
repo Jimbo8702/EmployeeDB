@@ -25,7 +25,6 @@ function startApp() {
           "add department",
           "add role",
           "add employee",
-          "update employee role",
         ],
         name: "choice",
       },
@@ -50,9 +49,6 @@ function startApp() {
         case "add employee":
           addEmployee();
           break;
-        case "update employee role":
-          updateRole();
-          break;
       }
     });
 }
@@ -61,6 +57,7 @@ function startApp() {
 function allDepartments() {
   db.query("SELECT * FROM department", function (err, results) {
     console.log(results);
+    startApp();
   });
   // console.log("departments");
 }
@@ -68,6 +65,7 @@ function allDepartments() {
 function allRoles() {
   db.query("SELECT * FROM role", function (err, results) {
     console.log(results);
+    startApp();
   });
   //console.log("roles");
 }
@@ -77,6 +75,7 @@ function allEmployees() {
     "SELECT * FROM role RIGHT JOIN employee ON role.id = employee.role_id",
     function (err, results) {
       console.log(results);
+      startApp();
     }
   );
   //console.log("employees");
@@ -193,27 +192,31 @@ function addEmployee() {
             }
           }
         }
-        // db.query("SELECT * FROM employee", function (err, results) {
-        //   console.log(results);
-        //   function managerID() {}
-        // });
-        db.query(
-          `INSERT INTO employee (first_name , last_name, role_id) VALUES ("${
-            response.firstName
-          }","${response.lastName}", ${correctID()})`,
-          function (err, results) {
-            console.log(results);
-            console.log("added employee");
-            startApp();
+        db.query("SELECT * FROM employee", function (err, results) {
+          //console.log(results);
+          function managerID() {
+            const manager = results.map((employee) => employee.first_name);
+            for (var i = 0; i < manager.length; i++) {
+              if (manager[i] === response.manager) {
+                //const ids = results.map((role) => role.id);
+                let num = i + 1;
+                return num;
+              }
+            }
           }
-        );
+          db.query(
+            `INSERT INTO employee (first_name , last_name, role_id, manager_id) VALUES ("${
+              response.firstName
+            }","${response.lastName}", ${correctID()}, ${managerID()})`,
+            function (err, results) {
+              //console.log(results);
+              console.log("added employee");
+              startApp();
+            }
+          );
+        });
       });
   });
 }
 
 //update employee role
-function updateRole() {
-  console.log("role updated");
-}
-
-startApp();
